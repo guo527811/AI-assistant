@@ -1,6 +1,12 @@
 ---
 name: briefing-formatter
-description: 生成结构化的 AI 新闻简报和每日学习卡片。触发词：简报、日报、周报、学习笔记、格式化输出。
+description: >
+  当用户要求生成、整理或写 AI 新闻简报、日报、周报、每日学习笔记、学习卡片时触发此 Skill。
+  覆盖用户表达："帮我写今天的AI新闻""生成学习笔记""整理周报""做个简报""总结今日新闻""生成日报"。
+  输出结构化 Markdown：标题 -> 来源链接 -> 分类标签 -> 摘要 -> 建议。
+  输入为搜索结果/链接列表；输出为格式化 MD 文件，保存到指定路径。
+  不适用于：纯翻译、代码生成、通用聊天。
+  English: Trigger when user asks to generate AI news briefing, daily report, weekly report, or study notes with structured format (title, source links, category tags, summaries, suggestions).
 triggers:
   - "简报"
   - "日报"
@@ -8,6 +14,12 @@ triggers:
   - "学习笔记"
   - "学习卡片"
   - "今日新闻"
+  - "帮我写新闻"
+  - "整理新闻"
+  - "生成学习"
+  - "总结今日"
+  - "AI简报"
+  - "news briefing"
 allowed-tools: [Read, Write, Bash, Glob, WebSearch, WebFetch]
 ---
 
