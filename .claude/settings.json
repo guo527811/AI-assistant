@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "python .claude/hooks/check_sensitive_files.py",
+        "description": "阻止编辑 *.env, *.pem, *.key, credentials.*, secrets.* 等敏感文件"
+      }
+    ]
+  }
+}
