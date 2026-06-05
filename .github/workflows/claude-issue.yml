@@ -1,0 +1,42 @@
+name: Claude Code Issue Assistant
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Claude Code Issue Triage
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic
+          ANTHROPIC_MODEL: deepseek-v4-pro
+        run: |
+          claude --print "Analyze this GitHub issue: ${{ github.event.issue.title }}
+
+          Issue body:
+          ${{ github.event.issue.body }}
+
+          Tasks:
+          1. Add appropriate labels (bug, enhancement, documentation, question)
+          2. Assess complexity: low / medium / high
+          3. If it's a clear bug with an obvious fix, suggest the fix approach
+          4. Reply with a helpful triage comment"
