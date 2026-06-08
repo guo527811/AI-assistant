@@ -1,11 +1,10 @@
 """
 RAG 文档问答系统 — 面试作品 #2
-技术栈：LangChain + Chroma + Claude API
+技术栈：LangChain + Chroma + DeepSeek + 本地 Embedding
 
 使用方式：
-  1. pip install langchain langchain-community langchain-anthropic langchain-openai chromadb
-  2. 设置环境变量 ANTHROPIC_API_KEY 和 OPENAI_API_KEY
-  3. python rag_demo.py <文档路径>
+  1. pip install langchain langchain-community langchain-anthropic chromadb sentence-transformers
+  2. python rag_demo.py <文档路径>
 
 示例：
   python rag_demo.py E:/AI助手/构想.md
@@ -15,12 +14,19 @@ import sys
 import os
 from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+
+# ============================================
+# API 配置（从环境变量读取）
+# ============================================
+API_KEY = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
+BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic")
+MODEL = "deepseek-v4-pro"
 
 
 # ============================================
@@ -57,9 +63,13 @@ def split_documents(docs, chunk_size=500, chunk_overlap=50):
 # Step 3: 向量化 + 存储
 # ============================================
 def create_vectorstore(chunks, persist_dir="./chroma_db"):
-    """将文本块转为向量并存入 Chroma"""
-    print("🧮 向量化中（调用 OpenAI Embedding API）...")
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    """将文本块转为向量并存入 Chroma（使用本地免费 Embedding 模型）"""
+    print("🧮 向量化中（本地 all-MiniLM-L6-v2 模型，首次运行会下载）...")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
+    )
     vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
@@ -75,7 +85,12 @@ def create_vectorstore(chunks, persist_dir="./chroma_db"):
 def build_rag_chain(vectorstore, k=4):
     """构建 RAG 问答链"""
     retriever = vectorstore.as_retriever(search_kwargs={"k": k})
-    llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.3)
+    llm = ChatAnthropic(
+        model=MODEL,
+        api_key=API_KEY,
+        base_url=BASE_URL,
+        temperature=0.3,
+    )
 
     template = """你是一个文档问答助手。根据以下上下文回答问题。
 如果上下文中没有答案，请如实说「文档中未找到相关信息」。
@@ -134,14 +149,6 @@ def interactive_qa(chain):
 # Main
 # ============================================
 if __name__ == "__main__":
-    # 检查环境变量
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("⚠️  请设置环境变量 ANTHROPIC_API_KEY")
-        sys.exit(1)
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("⚠️  请设置环境变量 OPENAI_API_KEY")
-        sys.exit(1)
-
     # 获取文档路径
     if len(sys.argv) < 2:
         print("用法：python rag_demo.py <文档路径>")

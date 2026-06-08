@@ -11,6 +11,23 @@ from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
+# ============================================================
+# API 配置（从环境变量读取）
+# ============================================================
+API_KEY = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
+BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "https://api.deepseek.com/anthropic")
+MODEL = "deepseek-v4-pro"
+
+
+def create_llm(temperature=0.7):
+    """创建 LLM 实例，使用 DeepSeek 的 Anthropic 兼容接口"""
+    return ChatAnthropic(
+        model=MODEL,
+        api_key=API_KEY,
+        base_url=BASE_URL,
+        temperature=temperature,
+    )
+
 
 # ============================================================
 # 概念 1：Chain — 串联 LLM 调用
@@ -21,7 +38,7 @@ def demo_chain():
     print("🔗 概念 1：Chain（链）")
     print("=" * 60)
 
-    llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.7)
+    llm = create_llm(temperature=0.7)
 
     prompt = ChatPromptTemplate.from_messages([
         ("system", "你是一个{role}，擅长用{style}风格回答。"),
@@ -90,7 +107,7 @@ def demo_agent():
     print("🤖 概念 3：Agent（智能体）")
     print("=" * 60)
 
-    llm = ChatAnthropic(model="claude-sonnet-4-6", temperature=0.3)
+    llm = create_llm(temperature=0.3)
 
     agent = create_react_agent(
         model=llm,
@@ -114,10 +131,7 @@ def demo_agent():
 # Main
 # ============================================================
 if __name__ == "__main__":
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("⚠️  请设置 ANTHROPIC_API_KEY 环境变量")
-        exit(1)
-
+    print(f"🔑 API: {MODEL} @ {BASE_URL}")
     print("🚀 LangChain 核心概念速成")
     print("今天学习：Chain → Tool → Agent")
 
