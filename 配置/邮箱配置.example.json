@@ -1,0 +1,8 @@
+{
+  "smtp_server": "smtp.example.com",
+  "smtp_port": 465,
+  "sender_email": "your_email@example.com",
+  "sender_name": "你的AI助手",
+  "auth_code": "YOUR_SMTP_AUTH_CODE_HERE",
+  "recipient_email": "your_email@example.com"
+}
