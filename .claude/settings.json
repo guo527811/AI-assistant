@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"E:/AI助手/\" 2>/dev/null || echo \"E盘AI助手目录不存在\")",
+      "Read(//e/AI助手/**)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -8,8 +14,7 @@
             "type": "command",
             "command": "python .claude/hooks/check_sensitive_files.py"
           }
-        ],
-        "description": "阻止编辑 *.env, *.pem, *.key, credentials.*, secrets.* 等敏感文件"
+        ]
       }
     ]
   }
